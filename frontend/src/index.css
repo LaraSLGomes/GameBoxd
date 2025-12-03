@@ -1,0 +1,29 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-letterboxd-bg text-letterboxd-text-primary;
+  }
+}
+
+@layer components {
+  .btn-letterboxd {
+    @apply bg-letterboxd-green hover:bg-[#00c248] text-white font-semibold py-2.5 px-6 rounded-md transition-colors duration-200 uppercase text-sm tracking-wider;
+  }
+  
+  .btn-secondary {
+    @apply bg-letterboxd-card hover:bg-[#3a4451] text-letterboxd-text-primary font-semibold py-2.5 px-6 rounded-md transition-colors duration-200 border border-gray-700;
+  }
+  
+  .input-letterboxd {
+    @apply bg-letterboxd-card border border-gray-700 text-letterboxd-text-primary rounded-md px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-letterboxd-green focus:border-transparent transition-all;
+  }
+  
+  .card-poster {
+    @apply bg-letterboxd-card rounded-sm overflow-hidden shadow-lg hover:ring-2 hover:ring-letterboxd-green transition-all duration-200 cursor-pointer;
+  }
+}
