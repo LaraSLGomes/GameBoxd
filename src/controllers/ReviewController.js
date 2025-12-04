@@ -219,6 +219,41 @@ class ReviewController {
     }
   }
 
+  // Endpoint PATCH para o Game Service buscar apenas a média (como seu amigo pediu)
+  async getAverageRating(req, res) {
+    try {
+      const { id: gameId } = req.params;
+
+      const reviews = await Review.findAll({
+        where: { gameId: parseInt(gameId) }
+      });
+
+      if (reviews.length === 0) {
+        return res.status(200).json({
+          gameId: parseInt(gameId),
+          averageRating: 0,
+          totalReviews: 0
+        });
+      }
+
+      // Calcula média
+      const sumRatings = reviews.reduce((sum, review) => sum + parseFloat(review.rating), 0);
+      const averageRating = (sumRatings / reviews.length).toFixed(1);
+
+      return res.status(200).json({
+        gameId: parseInt(gameId),
+        averageRating: parseFloat(averageRating),
+        totalReviews: reviews.length
+      });
+    } catch (error) {
+      console.error('❌ Erro ao buscar média de rating:', error);
+      return res.status(500).json({
+        error: 'Erro ao buscar média de rating',
+        details: error.message
+      });
+    }
+  }
+
   async getReviewById(req, res) {
     try {
       const { id } = req.params;
