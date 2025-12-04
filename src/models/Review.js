@@ -29,7 +29,7 @@ const Review = sequelize.define('Review', {
         msg: 'Rating deve ser um número válido'
       }
     },
-    comment: 'Avaliação de 1.0 a 5.0 estrelas (aceita valores como 3.5)'
+    comment: 'Avaliação de 1.0 a 5.0 estrelas'
   },
   comment: {
     type: DataTypes.TEXT,
