@@ -136,15 +136,84 @@ class ReviewController {
         order: [['createdAt', 'DESC']]
       });
 
+      // Calcula a média de rating (igual Letterboxd)
+      let averageRating = 0;
+      if (reviews.length > 0) {
+        const sumRatings = reviews.reduce((sum, review) => sum + parseFloat(review.rating), 0);
+        averageRating = (sumRatings / reviews.length).toFixed(1); // Ex: 4.3
+      }
+
       return res.status(200).json({
         gameId: parseInt(gameId),
         count: reviews.length,
+        averageRating: parseFloat(averageRating), // Média geral do jogo
         reviews
       });
     } catch (error) {
       console.error('❌ Erro ao buscar reviews do jogo:', error);
       return res.status(500).json({
         error: 'Erro ao buscar reviews do jogo',
+        details: error.message
+      });
+    }
+  }
+
+  // Novo endpoint: Estatísticas completas de um jogo
+  async getGameStats(req, res) {
+    try {
+      const { gameId } = req.params;
+
+      const reviews = await Review.findAll({
+        where: { gameId }
+      });
+
+      if (reviews.length === 0) {
+        return res.status(200).json({
+          gameId: parseInt(gameId),
+          totalReviews: 0,
+          averageRating: 0,
+          distribution: {
+            "5.0": 0,
+            "4.5": 0,
+            "4.0": 0,
+            "3.5": 0,
+            "3.0": 0,
+            "2.5": 0,
+            "2.0": 0,
+            "1.5": 0,
+            "1.0": 0
+          }
+        });
+      }
+
+      // Calcula média
+      const sumRatings = reviews.reduce((sum, review) => sum + parseFloat(review.rating), 0);
+      const averageRating = (sumRatings / reviews.length).toFixed(1);
+
+      // Conta distribuição de notas (quantas pessoas deram cada nota)
+      const distribution = {
+        "5.0": 0, "4.5": 0, "4.0": 0,
+        "3.5": 0, "3.0": 0, "2.5": 0,
+        "2.0": 0, "1.5": 0, "1.0": 0
+      };
+
+      reviews.forEach(review => {
+        const ratingKey = parseFloat(review.rating).toFixed(1);
+        if (distribution.hasOwnProperty(ratingKey)) {
+          distribution[ratingKey]++;
+        }
+      });
+
+      return res.status(200).json({
+        gameId: parseInt(gameId),
+        totalReviews: reviews.length,
+        averageRating: parseFloat(averageRating),
+        distribution // Ex: { "5.0": 10, "4.5": 5, "4.0": 3, ... }
+      });
+    } catch (error) {
+      console.error('❌ Erro ao buscar estatísticas do jogo:', error);
+      return res.status(500).json({
+        error: 'Erro ao buscar estatísticas do jogo',
         details: error.message
       });
     }
