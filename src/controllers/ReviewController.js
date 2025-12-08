@@ -80,6 +80,40 @@ class ReviewController {
 
       console.log(`✅ Review criada com sucesso - ID: ${review.id}`);
 
+      // ============================================================
+      // ATUALIZAÇÃO DO RATING NO SERVIÇO DE JOGOS (JAVA)
+      // ============================================================
+      try {
+        // 1. Busca todas as reviews para recalcular a média exata
+        const allReviews = await Review.findAll({ where: { gameId } });
+        
+        let newAverage = ratingNum; 
+        
+        if (allReviews.length > 0) {
+            const sumRatings = allReviews.reduce((sum, r) => sum + parseFloat(r.rating), 0);
+            
+            // --- CORREÇÃO AQUI: Arredondamento para 1 casa decimal ---
+            const rawAverage = sumRatings / allReviews.length;
+            newAverage = parseFloat(rawAverage.toFixed(1)); 
+            // ---------------------------------------------------------
+        }
+
+        console.log(`🔄 Calculando nova média para Jogo ${gameId}: ${newAverage}`);
+
+        // 2. Envia a nova média para o Java via PATCH
+        // O Java espera um Map com a chave "rating"
+        await axios.patch(`${gameServiceUrl}/games/${gameId}/rating`, {
+            rating: newAverage
+        });
+
+        console.log('✅ Rating sincronizado com o Java com sucesso!');
+
+      } catch (syncError) {
+        // Apenas loga o erro, não falha a criação da review, pois ela já foi salva
+        console.error('⚠ Review criada, mas falhou ao atualizar rating no Java:', syncError.message);
+      }
+      // ============================================================
+
       return res.status(201).json({
         message: 'Review criada com sucesso',
         review: {
