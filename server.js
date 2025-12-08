@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
-const { testConnection } = require('./src/config/db');
+// MUDANÇA 1: Importamos 'sequelize' além do 'testConnection'
+const { sequelize, testConnection } = require('./src/config/db'); 
 const reviewRoutes = require('./src/routes/reviewRoutes');
 
 const app = express();
@@ -14,6 +15,7 @@ app.use((req, res, next) => {
   next();
 });
 
+// Configuração de CORS
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
@@ -54,15 +56,22 @@ app.use((err, req, res, next) => {
 
 async function startServer() {
   try {
+    // 1. Testa a conexão
     await testConnection();
+    
+    // MUDANÇA 2: Cria as tabelas se elas não existirem!
+    // Isso é essencial para o primeiro deploy no Railway
+    console.log('🔄 Sincronizando tabelas do banco de dados...');
+    await sequelize.sync(); 
+    console.log('✅ Tabelas sincronizadas!');
     
     app.listen(PORT, () => {
       console.log('='.repeat(50));
       console.log(`🚀 Review Service rodando na porta ${PORT}`);
       console.log(`📍 URL: http://localhost:${PORT}`);
       console.log(`🔍 Health Check: http://localhost:${PORT}/health`);
-      console.log(`🎮 Game Service URL: ${process.env.GAME_SERVICE_URL}`);
-      console.log(`🗄️  Database: ${process.env.DB_NAME}@${process.env.DB_HOST}:${process.env.DB_PORT}`);
+      // O log abaixo ajuda a ver se a variável do Railway está sendo lida certa
+      console.log(`🎮 Game Service URL: ${process.env.GAME_SERVICE_URL}`); 
       console.log('='.repeat(50));
     });
   } catch (error) {
